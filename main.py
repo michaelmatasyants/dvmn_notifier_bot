@@ -9,7 +9,7 @@ from lexicon import LEXICON
 
 
 def start_process(update: Update, context: CallbackContext):
-    '''Start'''
+    '''Start handler'''
     update.message.reply_text(text=LEXICON['greeting'].format(
                     full_name=update.message.from_user.full_name))
 
@@ -86,9 +86,8 @@ def main():
         except requests.exceptions.HTTPError as http_err:
             print(http_err)
             break
-        except requests.exceptions.Timeout as timeout_err:
+        except requests.exceptions.Timeout:
             last_timestamp = time()
-            print(timeout_err)
         else:
             notify_for_reviews(tg_token=tg_token,
                                chat_id=args.chat_id,
