@@ -68,23 +68,16 @@ python3 main.py 123456789
 Output:
 ```
 2023-09-14 15:38:13,868 - apscheduler.scheduler - INFO - Scheduler started
-
 ```
 
-In order for the bot to send you messages, go into a dialog with it and click start and you will receive the following message:
-```
-Добрый день, {full_name}!
-Данный бот уведосляет о готовых code review по выполненному уроку на dvmn.org.
-```
-
-Where instead of full_name will be your first and last name in telegram.
-Once the code review on the lesson is ready, you will receive one of the following messages.<br>
+In order for the bot to send you messages, go into a dialog with it and click `start`.<br>
+Once the code review on the lesson is ready, you will receive one of the following messages.
 
 If there are edits:
 ```
 У вас проверили урок "{lesson_title}"
 
-Преподавателю все понравилось. Можно приступать к следующему уроку!
+К сожалению нашлись ошибки.
 Для просмотра урока перейдите по ссылке: {lesson_url}
 ```
 
@@ -92,7 +85,7 @@ If there are no edits:
 ```
 У вас проверили урок "{lesson_title}"
 
-К сожалению нашлись ошибки.
+Преподавателю все понравилось. Можно приступать к следующему уроку!
 Для просмотра урока перейдите по ссылке: {lesson_url}
 ```
 
