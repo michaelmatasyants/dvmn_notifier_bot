@@ -1,17 +1,10 @@
 import argparse
 import logging
 from time import sleep, time
+from environs import Env
 import requests
-from telegram import Update
-from telegram.ext import Updater, CallbackContext, CommandHandler
-from config import load_config
+from telegram.ext import Updater
 from lexicon import LEXICON
-
-
-def start_process(update: Update, context: CallbackContext):
-    '''Start handler'''
-    update.message.reply_text(text=LEXICON['greeting'].format(
-                    full_name=update.message.from_user.full_name))
 
 
 def notify_for_reviews(tg_token: str, chat_id: str, new_attempts):
@@ -31,7 +24,7 @@ def notify_for_reviews(tg_token: str, chat_id: str, new_attempts):
                          text=LEXICON['checked_errors_found'].format(
                              lesson_title=lesson_title,
                              lesson_url=lesson_url)
-)
+        )
 
 
 def get_reviews(dvmn_token: str, timestamp: float) -> dict | None:
@@ -49,6 +42,8 @@ def get_reviews(dvmn_token: str, timestamp: float) -> dict | None:
 
 def main():
     '''Main function'''
+    env = Env()
+    env.read_env()
     parser = argparse.ArgumentParser(
         description='''This script helps to track and check for passed code
                        reviews on dvmn.org. If there are any, the telegram
@@ -65,20 +60,19 @@ def main():
     logging.basicConfig(
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
         level=logging.INFO)
-    config = load_config()
-    tg_token = config.tgbot.token
-    updater = Updater(token=tg_token)
-    start_handler = CommandHandler(command='start', callback=start_process)
-    dispatcher = updater.dispatcher
-    dispatcher.add_handler(start_handler)
-    updater.start_polling()
     last_timestamp = time()
 
     while True:
         try:
-            reviews = get_reviews(dvmn_token=config.dvmn_api.token,
+            reviews = get_reviews(dvmn_token=f"Token {env('DVMN_API_TOKEN')}",
                                   timestamp=last_timestamp)
-            last_timestamp = reviews.get('last_attempt_timestamp')
+            if reviews['status'] == 'timeout':
+                last_timestamp = reviews['timestamp_to_request']
+                continue
+            last_timestamp = reviews['last_attempt_timestamp']
+            notify_for_reviews(tg_token=env('TG_BOT_TOKEN'),
+                               chat_id=args.chat_id,
+                               new_attempts=reviews['new_attempts'][0])
         except requests.exceptions.ConnectionError:
             print('A connection error occurred, the script will try to '
                   'reconnect in 2 minutes.')
@@ -86,12 +80,12 @@ def main():
         except requests.exceptions.HTTPError as http_err:
             print(http_err)
             break
+        except KeyError as k_err:
+            print(k_err)
+            break
         except requests.exceptions.Timeout:
             last_timestamp = time()
-        else:
-            notify_for_reviews(tg_token=tg_token,
-                               chat_id=args.chat_id,
-                               new_attempts=reviews['new_attempts'][0])
+
 
 
 if __name__ == '__main__':
