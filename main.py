@@ -17,14 +17,12 @@ def notify_for_reviews(tg_token: str, chat_id: str, new_attempts):
     if lesson_passed:
         bot.send_message(chat_id=chat_id,
                          text=LEXICON['checked_no_errors'].format(
-                             lesson_title)
-        )
+                             lesson_title))
     else:
         bot.send_message(chat_id=chat_id,
                          text=LEXICON['checked_errors_found'].format(
                              lesson_title=lesson_title,
-                             lesson_url=lesson_url)
-        )
+                             lesson_url=lesson_url))
 
 
 def get_reviews(dvmn_token: str, timestamp: float) -> dict | None:
@@ -80,12 +78,8 @@ def main():
         except requests.exceptions.HTTPError as http_err:
             print(http_err)
             break
-        except KeyError as k_err:
-            print(k_err)
-            break
         except requests.exceptions.Timeout:
             last_timestamp = time()
-
 
 
 if __name__ == '__main__':
