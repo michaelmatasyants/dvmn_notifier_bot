@@ -1,10 +1,24 @@
-import argparse
 import logging
 from time import sleep, time
 from environs import Env
 import requests
 from telegram.ext import Updater
 from lexicon import LEXICON
+
+
+class TelegramLogsHandler(logging.Handler):
+
+    def __init__(self, tg_bot, chat_id):
+        super().__init__()
+        self.chat_id = chat_id
+        self.tg_bot = tg_bot
+
+    def emit(self, record):
+        log_entry = self.format(record)
+        self.tg_bot.send_message(chat_id=self.chat_id, text=log_entry)
+
+
+logger = logging.getLogger(__file__)
 
 
 def notify_for_reviews(tg_token: str, chat_id: str, new_attempts):
@@ -42,24 +56,18 @@ def main():
     '''Main function'''
     env = Env()
     env.read_env()
-    parser = argparse.ArgumentParser(
-        description='''This script helps to track and check for passed code
-                       reviews on dvmn.org. If there are any, the telegram
-                       bot sends a message about available code reviews for
-                       a particular lesson.
-                       To use this script you only need to specify your chat_id
-                       for the telegram where you want to get messages.
-                       To get your chat_id, send a message to @userinfobot in
-                       telegram.'''
-    )
-    parser.add_argument('chat_id', help='Enter, your chat_id', type=str)
-    args = parser.parse_args()
+    tg_token = env.str('TG_BOT_TOKEN')
+    chat_id = env.str('TG_CHAT_ID')
+    bot = Updater(token=tg_token).bot
 
     logging.basicConfig(
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        format='%(asctime)s - %(pathname)s - %(levelname)s - %(message)s',
         level=logging.INFO)
+    logger.setLevel(logging.INFO)
+    logger.addHandler(TelegramLogsHandler(tg_bot=bot,
+                                          chat_id=env.str('TG_ADMIN_CHAT_ID')))
+    logger.info('Bot started')
     last_timestamp = time()
-    logging.info('bot started')
 
     while True:
         try:
@@ -69,17 +77,18 @@ def main():
                 last_timestamp = reviews['timestamp_to_request']
                 continue
             last_timestamp = reviews['last_attempt_timestamp']
-            logging.info('Got a new review')
-            notify_for_reviews(tg_token=env('TG_BOT_TOKEN'),
-                               chat_id=args.chat_id,
+            logger.info('Got a new review')
+            notify_for_reviews(tg_token=tg_token,
+                               chat_id=env.str('TG_CHAT_ID'),
                                new_attempts=reviews['new_attempts'][0])
-            logging.info('Sent fetched review')
+            logger.info('Sent fetched review')
         except requests.exceptions.ConnectionError:
-            logging.error('A connection error occurred, the script will try to'
-                          ' reconnect in 2 minutes.')
+            logger.exception(
+                'A connection error occurred, the script will try to'
+                ' reconnect in 2 minutes.')
             sleep(120)
         except requests.exceptions.HTTPError as http_err:
-            logging.error(http_err)
+            logger.exception(http_err)
             break
         except requests.exceptions.Timeout:
             last_timestamp = time()
