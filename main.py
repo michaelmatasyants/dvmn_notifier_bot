@@ -57,19 +57,17 @@ def main():
     env = Env()
     env.read_env()
     tg_token = env.str('TG_BOT_TOKEN')
-    chat_id = env.str('TG_CHAT_ID')
     bot = Updater(token=tg_token).bot
-
     logging.basicConfig(
         format='%(asctime)s - %(pathname)s - %(levelname)s - %(message)s',
         level=logging.INFO)
     logger.setLevel(logging.INFO)
     logger.addHandler(TelegramLogsHandler(tg_bot=bot,
                                           chat_id=env.str('TG_ADMIN_CHAT_ID')))
-    logger.info('Bot started')
     last_timestamp = time()
 
     while True:
+        logger.info('Bot started')
         try:
             reviews = get_reviews(dvmn_token=f"Token {env('DVMN_API_TOKEN')}",
                                   timestamp=last_timestamp)
@@ -92,7 +90,7 @@ def main():
             break
         except requests.exceptions.Timeout:
             last_timestamp = time()
-
+            logger.exception('Timeout')
 
 if __name__ == '__main__':
     main()
