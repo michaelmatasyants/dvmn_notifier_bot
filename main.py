@@ -59,6 +59,7 @@ def main():
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
         level=logging.INFO)
     last_timestamp = time()
+    logging.info('bot started')
 
     while True:
         try:
@@ -68,15 +69,17 @@ def main():
                 last_timestamp = reviews['timestamp_to_request']
                 continue
             last_timestamp = reviews['last_attempt_timestamp']
+            logging.info('Got a new review')
             notify_for_reviews(tg_token=env('TG_BOT_TOKEN'),
                                chat_id=args.chat_id,
                                new_attempts=reviews['new_attempts'][0])
+            logging.info('Sent fetched review')
         except requests.exceptions.ConnectionError:
-            print('A connection error occurred, the script will try to '
-                  'reconnect in 2 minutes.')
+            logging.error('A connection error occurred, the script will try to'
+                          ' reconnect in 2 minutes.')
             sleep(120)
         except requests.exceptions.HTTPError as http_err:
-            print(http_err)
+            logging.error(http_err)
             break
         except requests.exceptions.Timeout:
             last_timestamp = time()
