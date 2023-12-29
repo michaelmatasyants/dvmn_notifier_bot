@@ -1,8 +1,10 @@
 import logging
 from time import sleep, time
-from environs import Env
+
 import requests
+from environs import Env
 from telegram.ext import Updater
+
 from lexicon import LEXICON
 
 
@@ -66,8 +68,8 @@ def main():
                                           chat_id=env.str('TG_ADMIN_CHAT_ID')))
     last_timestamp = time()
 
+    logger.info('Bot started')
     while True:
-        logger.info('Bot started')
         try:
             reviews = get_reviews(dvmn_token=f"Token {env('DVMN_API_TOKEN')}",
                                   timestamp=last_timestamp)
@@ -90,7 +92,7 @@ def main():
             break
         except requests.exceptions.Timeout:
             last_timestamp = time()
-            logger.exception('Timeout')
+
 
 if __name__ == '__main__':
     main()

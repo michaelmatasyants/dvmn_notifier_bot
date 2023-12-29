@@ -10,7 +10,7 @@ Also you need to create a telegram bot
 1. To run the project you should already have Python 3 and pip (package-management system) installed.
 
 2. Download the code (use git clone).
-   ```
+   ```console
    git clone git@github.com:michaelmatasyants/dvmn_notifier_bot.git
    ```
 
@@ -18,7 +18,7 @@ Also you need to create a telegram bot
    It'll help you to isolate the project from the packages located in the base environment.
 
 4. Install all the packages used in this project, in your virtual environment which you've created on the step 3. Use the `requirements.txt` file to install dependencies:
-   ```
+   ```console
    pip install -r requirements.txt
    ```
 5. To use this script, you also need a dvmn API key. To get the API key, go to [API link](https://dvmn.org/api/docs/) from your account.<br>
@@ -33,20 +33,29 @@ Also you need to create a telegram bot
 
 9. Remember to add `.env` to your `.gitignore` if you are going to put the project on GIT.
 
+## Telegram bot containerization
 
-## Examples of running scripts
+   Firstly lets build the Image for our telegram bot
+   ```console
+   docker build -t dvmn-bot .
+   ```
+
+   After building the Image lets run our container
+   ```console
+   docker run -dp 127.0.0.1:3000:3000 dvmn-bot
+   ```
 
 
-
+## Examples of running scripts without containerization
 
 Let's take a look at what this script can do first.<br>
 Run:
-```
+```console
 python3 main.py -h
 ```
 
 Output:
-```
+```console
 usage: main.py [-h] chat_id
 
 This script helps to track and check for passed code reviews on dvmn.org. If there are any, the telegram bot sends a message about available code reviews for a particular lesson. To use this script you
