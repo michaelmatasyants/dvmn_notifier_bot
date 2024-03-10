@@ -40,7 +40,12 @@ Also you need to create a telegram bot
    docker build -t dvmn-bot .
    ```
 
-   After building the Image lets run our container
+   After building the Image lets pass environment variables with use of `.env` file.
+   ```
+   docker run --env-file ./env ubuntu bash
+   ```
+
+   After passing variables lets run our container
    ```console
    docker run -dp 127.0.0.1:3000:3000 dvmn-bot
    ```

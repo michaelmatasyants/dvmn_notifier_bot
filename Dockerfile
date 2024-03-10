@@ -17,15 +17,14 @@ RUN adduser \
     appuser
 
 
-# RUN apt-get update && apt-get install -y python3 && apt-get install -y python3-pip
-RUN --mount=type=cache,target=/root/.cache/pip \
-    --mount=type=bind,source=requirements.txt,target=requirements.txt \
-    python -m pip install -r requirements.txt
+RUN apt-get update && apt-get install -y python3 && apt-get install -y python3-pip
+RUN --mount=type=cache,target=/root/.cache/pip
 
 USER appuser
 
-COPY . .
+COPY . /app
 
+# adding port
 EXPOSE 3000
 
 CMD ["python3", "main.py"]
